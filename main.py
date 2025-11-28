@@ -82,7 +82,7 @@ n_combinations = (
     len(param_grid['subsample']) *
     len(param_grid['max_depth']) *
     len(param_grid['min_samples_split']) *
-    len(param_grid['n_iter_no_change']
+    len(param_grid['n_iter_no_change'])
 )
 cv_folds = 5
 total_fits = n_combinations * cv_folds
