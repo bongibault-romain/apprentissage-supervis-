@@ -67,11 +67,10 @@ model = GradientBoostingClassifier(random_state=42)
 
 # Hyperparameter grid
 param_grid = {
-    'n_estimators': [20, 30],
+    'n_estimators': [50, 100],
     'learning_rate': [0.5, 1.0],
-    'subsample': [0.8, 1.0],
     'max_depth': [5, 7],
-    'min_samples_split': [5, 10],
+    'min_samples_split': [10, 15],
     'n_iter_no_change': [2, 4]
 }
 
