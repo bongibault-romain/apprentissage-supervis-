@@ -52,8 +52,8 @@ from sklearn.metrics import accuracy_score
 import pandas as pd
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.ensemble import DecisionTreeClassifier
 from sklearn.model_selection import GridSearchCV
+from sklearn.tree import DecisionTreeClassifier
 from tqdm import tqdm
 
 print("Starting Grid Search for RandomForestClassifier...")
