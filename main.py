@@ -63,20 +63,26 @@ print(f"Test set size: {X_test.shape[0]}")
 
 # Avoid nested or excessive parallelism which can exhaust memory/CPU
 # Set n_jobs=1 here and for GridSearchCV to prevent spawning too many processes
-model = AdaBoostClassifier(random_state=42)
+model = GradientBoostingClassifier(random_state=42)
 
 # Hyperparameter grid
 param_grid = {
-    'estimator': [DecisionTreeClassifier(max_depth=d) for d in [2, 3, 4]],
-    'n_estimators': [10, 20],
-    'learning_rate': [1.0, 2.0],
+    'n_estimators': [20, 30],
+    'learning_rate': [0.5, 1.0],
+    'subsample': [0.8, 1.0],
+    'max_depth': [5, 7],
+    'min_samples_split': [5, 10],
+    'n_iter_no_change': [2, 4]
 }
 
 # Calculate total number of fits for progress bar
 n_combinations = (
-    len(param_grid['estimator']) *
     len(param_grid['n_estimators']) *
-    len(param_grid['learning_rate'])
+    len(param_grid['learning_rate']) *
+    len(param_grid['subsample']) *
+    len(param_grid['max_depth']) *
+    len(param_grid['min_samples_split']) *
+    len(param_grid['n_iter_no_change']
 )
 cv_folds = 5
 total_fits = n_combinations * cv_folds
