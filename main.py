@@ -70,6 +70,7 @@ param_grid = {
     'max_depth': [2, 5, 8],
     'min_samples_split': [2, 5, 10],
     'min_samples_leaf': [1, 4, 10],
+    'bootstrap': [True]
 }
 
 # Calculate total number of fits for progress bar
@@ -77,7 +78,8 @@ n_combinations = (
     len(param_grid['n_estimators']) *
     len(param_grid['max_depth']) *
     len(param_grid['min_samples_split']) *
-    len(param_grid['min_samples_leaf'])
+    len(param_grid['min_samples_leaf']) *
+    len(param_grid['bootstrap'])
 )
 cv_folds = 5
 total_fits = n_combinations * cv_folds
