@@ -52,6 +52,7 @@ from sklearn.metrics import accuracy_score
 import pandas as pd
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import DecisionTreeClassifier
 from sklearn.model_selection import GridSearchCV
 from tqdm import tqdm
 
@@ -62,24 +63,20 @@ print(f"Test set size: {X_test.shape[0]}")
 
 # Avoid nested or excessive parallelism which can exhaust memory/CPU
 # Set n_jobs=1 here and for GridSearchCV to prevent spawning too many processes
-model = RandomForestClassifier(random_state=42, n_jobs=1)
+model = AdaBoostClassifier(random_state=42)
 
 # Hyperparameter grid
 param_grid = {
-    'n_estimators': [100, 200, 300],
-    'max_depth': [2, 5, 8],
-    'min_samples_split': [2, 5, 10],
-    'min_samples_leaf': [1, 4, 10],
-    'bootstrap': [True]
+    'base_estimator': [DecisionTreeClassifier(max_depth=d) for d in [1, 2, 3, 4, 5]],
+    'n_estimators': [50, 100, 200, 300],
+    'learning_rate': [0.01, 0.1, 1.0],
 }
 
 # Calculate total number of fits for progress bar
 n_combinations = (
+    len(param_grid['base_estimator']) *
     len(param_grid['n_estimators']) *
-    len(param_grid['max_depth']) *
-    len(param_grid['min_samples_split']) *
-    len(param_grid['min_samples_leaf']) *
-    len(param_grid['bootstrap'])
+    len(param_grid['learning_rate'])
 )
 cv_folds = 5
 total_fits = n_combinations * cv_folds
