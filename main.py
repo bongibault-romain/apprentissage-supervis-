@@ -66,8 +66,8 @@ model = RandomForestClassifier(random_state=42, n_jobs=1)
 
 # Hyperparameter grid
 param_grid = {
-    'n_estimators': [100, 200, 300],
-    'max_depth': [None, 5, 10],
+    'n_estimators': [10, 20, 30],
+    'max_depth': [2, 5, 8],
     'min_samples_split': [2, 5],
     'min_samples_leaf': [1, 2],
     'bootstrap': [True, False]
