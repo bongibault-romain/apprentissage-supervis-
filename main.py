@@ -3,6 +3,8 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import OneHotEncoder
+from formatter import confusion
+import time
 
 features = pd.read_csv("./dataset/alt_acsincome_ca_features_85.csv")
 labels = pd.read_csv("./dataset/alt_acsincome_ca_labels_85.csv")
@@ -39,38 +41,102 @@ encoded_df = pd.DataFrame(encoded, columns=encoder.get_feature_names_out(cols_to
 
 df_final = pd.concat([features.drop(columns=cols_to_encode), encoded_df], axis=1)
 
-print(features.head())
-print(df_final.head())
-#plt_x_sex = features.get("SEX").values
-#plt_y_pinpc = labels.get("AGEP").values
-
-# plot correlation
-#plt.scatter(plt_x_sex, plt_y_pinpc)
-#plt.xlabel("SEX")
-#plt.ylabel("AGEP")
-#plt.title("Correlation between SEX and AGEP")
-#plt.show()
-
-
-# format_data(features, "AGEP", {
-#     0: (0, 20),
-#     1: (20, 40),
-#     2: (40, 60),
-#     3: (60, 120),
-# })
-
-# distribution("AGEP", features.get("AGEP").values)
-# distribution("COW", features.get("COW").values) # 1 - Autre
-# distribution("SCHL", features.get("SCHL").values)
-# distribution("MAR", features.get("MAR").values)
-# distribution("OCCP", features.get("OCCP").values)
-# distribution("POBP", features.get("POBP").values)
-# distribution("RELP", features.get("RELP").values)
-# distribution("WKHP", features.get("WKHP").values)
-# distribution("SEX", features.get("SEX").values)
-# distribution("RAC1P", features.get("RAC1P").values)
-
 X = np.array(df_final.values)
 y = np.array(labels.get("PINCP").values)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+import pandas as pd
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.model_selection import GridSearchCV
+from tqdm import tqdm
+
+print("Starting Grid Search for RandomForestClassifier...")
+# Dataset size
+print(f"Training set size: {X_train.shape[0]}")
+print(f"Test set size: {X_test.shape[0]}")
+
+# Avoid nested or excessive parallelism which can exhaust memory/CPU
+# Set n_jobs=1 here and for GridSearchCV to prevent spawning too many processes
+model = RandomForestClassifier(random_state=42, n_jobs=1)
+
+# Hyperparameter grid
+param_grid = {
+    'n_estimators': [100, 200, 300],
+    'max_depth': [None, 5, 10],
+    'min_samples_split': [2, 5],
+    'min_samples_leaf': [1, 2],
+    'bootstrap': [True, False]
+}
+
+# Calculate total number of fits for progress bar
+n_combinations = (
+    len(param_grid['n_estimators']) *
+    len(param_grid['max_depth']) *
+    len(param_grid['min_samples_split']) *
+    len(param_grid['min_samples_leaf']) *
+    len(param_grid['bootstrap'])
+)
+cv_folds = 5
+total_fits = n_combinations * cv_folds
+print(f"Total combinations: {n_combinations}, Total fits (with CV): {total_fits}")
+
+# Progress bar callback
+class TqdmCallback:
+    def __init__(self, total):
+        self.pbar = tqdm(total=total, desc="GridSearch progress")
+        self.n_completed = 0
+    
+    def __call__(self, result):
+        self.pbar.update(1)
+    
+    def close(self):
+        self.pbar.close()
+
+progress_callback = TqdmCallback(total_fits)
+
+# Grid search
+grid_search = GridSearchCV(
+    estimator=model,
+    param_grid=param_grid,
+    cv=5,                 # 5-fold cross-validation
+    n_jobs=2,             # run grid search single-threaded to avoid OOM on small/limited machines
+    pre_dispatch='2*n_jobs',
+    scoring='accuracy',   # metric to optimize
+    verbose=3             # verbose=3 shows progress for each fit
+)
+
+# Compute CPU time
+
+start_time = time.process_time()
+
+try:
+    grid_search.fit(X_train, y_train)
+except MemoryError:
+    print("MemoryError: the grid search likely exhausted available RAM.\n"
+          "Suggestions: set GridSearchCV(n_jobs=1), reduce the size of `param_grid`, use `RandomizedSearchCV`,\n"
+          "or run on a machine with more memory. Stopping to avoid crashing the system.")
+    raise
+
+end_time = time.process_time()
+
+print(f"Grid Search completed in {end_time - start_time} seconds.")
+# Best hyperparameters
+print("Best Parameters:", grid_search.best_params_)
+
+# Best model
+best_model = grid_search.best_estimator_
+
+# Test accuracy
+accuracy = best_model.score(X_test, y_test)
+train_accuracy = best_model.score(X_train, y_train)
+
+print("Test Accuracy:", accuracy)
+print("Train Accuracy:", train_accuracy)
+    
+confusion(best_model, X_test, y_test, "Test")
+confusion(best_model, X_train, y_train, "Train")
