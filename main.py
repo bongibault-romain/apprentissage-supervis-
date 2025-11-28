@@ -67,7 +67,7 @@ model = AdaBoostClassifier(random_state=42)
 
 # Hyperparameter grid
 param_grid = {
-    'base_estimator': [DecisionTreeClassifier(max_depth=d) for d in [1, 2, 3, 4, 5]],
+    'estimator': [DecisionTreeClassifier(max_depth=d) for d in [1, 2, 3, 4, 5]],
     'n_estimators': [50, 100, 200, 300],
     'learning_rate': [0.01, 0.1, 1.0],
 }
