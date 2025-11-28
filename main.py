@@ -78,7 +78,6 @@ param_grid = {
 n_combinations = (
     len(param_grid['n_estimators']) *
     len(param_grid['learning_rate']) *
-    len(param_grid['subsample']) *
     len(param_grid['max_depth']) *
     len(param_grid['min_samples_split']) *
     len(param_grid['n_iter_no_change'])
