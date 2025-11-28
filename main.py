@@ -74,7 +74,7 @@ param_grid = {
 
 # Calculate total number of fits for progress bar
 n_combinations = (
-    len(param_grid['base_estimator']) *
+    len(param_grid['estimator']) *
     len(param_grid['n_estimators']) *
     len(param_grid['learning_rate'])
 )
