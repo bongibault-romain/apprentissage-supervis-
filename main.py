@@ -104,7 +104,7 @@ grid_search = GridSearchCV(
     estimator=model,
     param_grid=param_grid,
     cv=5,                 # 5-fold cross-validation
-    n_jobs=2,             # run grid search single-threaded to avoid OOM on small/limited machines
+    n_jobs=-1,             # run grid search single-threaded to avoid OOM on small/limited machines
     pre_dispatch='2*n_jobs',
     scoring='accuracy',   # metric to optimize
     verbose=3             # verbose=3 shows progress for each fit
