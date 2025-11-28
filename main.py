@@ -9,6 +9,10 @@ import time
 features = pd.read_csv("./dataset/alt_acsincome_ca_features_85.csv")
 labels = pd.read_csv("./dataset/alt_acsincome_ca_labels_85.csv")
 
+features_colorado = pd.read_csv("complementary-data/Complementary data/acsincome_co_allfeatures.csv")
+labels_colorado = pd.read_csv("complementary-data/Complementary data/acsincome_co_label.csv")
+
+
 def distribution(name, column):
     fig, ax = plt.subplots()
 
@@ -46,6 +50,15 @@ y = np.array(labels.get("PINCP").values)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
 
+encoder_colorado = OneHotEncoder(sparse_output=False)
+encoded_colorado = encoder_colorado.fit_transform(features_colorado[cols_to_encode])
+
+encoded_df_colorado = pd.DataFrame(encoded_colorado, columns=encoder_colorado.get_feature_names_out(cols_to_encode))
+
+df_final_colorado = pd.concat([features_colorado.drop(columns=cols_to_encode), encoded_df_colorado], axis=1)
+X_colorado = np.array(df_final_colorado.values)
+y_colorado = np.array(labels_colorado.get("PINCP").values)
+
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
@@ -67,11 +80,11 @@ model = GradientBoostingClassifier(random_state=42)
 
 # Hyperparameter grid
 param_grid = {
-    'n_estimators': [10, 20],
+    'n_estimators': [20],
     'learning_rate': [1.0],
-    'max_depth': [5, 7],
-    'min_samples_split': [10, 15],
-    'n_iter_no_change': [2, 4]
+    'max_depth': [5],
+    'min_samples_split': [15],
+    'n_iter_no_change': [4]
 }
 
 # Calculate total number of fits for progress bar
@@ -141,3 +154,9 @@ print("Train Accuracy:", train_accuracy)
     
 confusion(best_model, X_test, y_test, "Test")
 confusion(best_model, X_train, y_train, "Train")
+
+# Colorado accuracy
+accuracy_colorado = best_model.score(X_colorado, y_colorado)
+print("Colorado Accuracy:", accuracy_colorado)
+
+confusion(best_model, X_colorado, y_colorado, "Colorado")
